@@ -1,0 +1,10 @@
+---
+# defaults file for kubernetes
+
+kubernetes_packages:
+  - name: kubelet
+    state: present
+  - name: kubectl
+    state: present
+  - name: kubeadm
+    state: present

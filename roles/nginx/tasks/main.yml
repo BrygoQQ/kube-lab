@@ -1,0 +1,48 @@
+---
+# tasks file for nginx
+
+- name: Create service and deploy
+  include: d&s.yml
+  tags:
+    - d&s
+
+- name: Create ConfigMap
+  include: configMap.yml
+  tags:
+    - configMap
+
+# Start task 8
+
+- name: Create directory on node
+  file:
+    path: apps
+    state: directory
+  delegate_to: node-1
+
+- name: Copy file
+  copy: 
+    src: index.html
+    dest: apps/index.html
+  delegate_to: node-1
+
+#  End task 8
+
+- name: Create persistent volume
+  include: pv.yml
+  tags:
+    - pv
+
+- name: Create persistent volume claim
+  include: pvc.yml
+  tags:
+    - pvc
+
+- name: Create pod
+  include: pod.yml
+  tags:
+    - pod
+
+- name: Create init
+  include: init.yml
+  tags:
+    - init

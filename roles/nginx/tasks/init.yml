@@ -1,0 +1,12 @@
+- name: Create directory init
+  file:
+    path: init
+    state: directory
+
+- name: Copy file init
+  copy:
+    src: init/nginx-deploy-init.yaml
+    dest: init/nginx-deploy-init.yaml
+
+- name: Deploy with init
+  shell: kubectl apply -f init/nginx-deploy-init.yaml

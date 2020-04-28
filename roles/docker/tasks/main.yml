@@ -1,0 +1,41 @@
+---
+# tasks file for docker
+
+- name: install Dependence
+  yum:
+    name: ['yum-utils', 'jq', 'net-tools']
+    state: present
+
+- name: Add repository
+  shell: | 
+        yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        yum-config-manager --enable docker-ce-edge
+  changed_when: false
+
+- name: install Docker
+  yum:
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+    state: present
+
+- name: Start docker
+  service: 
+    name: docker 
+    state: started
+    enabled: yes
+
+- name: Configuration Docker
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  notify: "restart docker"
+
+- name: Install Docker-compose
+  pip:
+    name: docker-compose
+
+- name: Adding existing user to group docker
+  user:
+    name: vagrant
+    group: docker
+    append: yes
+

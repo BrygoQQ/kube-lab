@@ -1,0 +1,52 @@
+---
+# tasks file for dashboard
+
+- name: Create directory
+  file:
+    path: $HOME/certs
+    state: directory
+
+- name: Create sert
+  shell: |
+    cd $HOME/certs
+    openssl genrsa -des3 -passout pass:over4chars -out dashboard.pass.key 2048
+    openssl rsa -passin pass:over4chars -in dashboard.pass.key -out dashboard.key
+    rm dashboard.pass.key
+    openssl req -sha256 -new -key dashboard.key -out dashboard.csr -subj '/CN=localhost'
+    openssl x509 -req -sha256 -days 365 -in dashboard.csr -signkey dashboard.key -out dashboard.crt
+
+- name: Create namespace
+  command: kubectl create namespace kubernetes-dashboard
+
+- name: Load sert
+  command: kubectl -n kubernetes-dashboard create secret generic kubernetes-dashboard-certs --from-file=$HOME/certs
+
+- name: Set up default namespace
+  command: kubectl config set-context --current --namespace=kube-system
+  changed_when: false
+
+- name: Copy file
+  copy:
+    src: recommended.yml
+    dest: recommended.yml
+
+- name: installation dashboard
+  shell: kubectl apply -f recommended.yml
+
+- name: Copy user.yml
+  template:
+    src: service-account.yml.j2
+    dest: ./service-account.yml
+
+- name: Create sa
+  command: kubectl create -f service-account.yml
+
+- name: Get token
+  shell: "kubectl get secret $(kubectl get serviceaccount {{ user_name }} -o jsonpath='{.secrets[0].name}') -o jsonpath='{.data.token}' | base64 --decode"
+  register: token
+
+- name: Create file with token on localhost
+  shell: "echo {{ token.stdout }} > token.txt"
+  delegate_to: localhost
+
+

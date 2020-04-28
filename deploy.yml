@@ -1,0 +1,25 @@
+- name: Installation Docker
+  hosts: all
+  become: yes
+
+  roles:
+    - docker
+
+- name: Installation Kubernetes and Set roles 
+  hosts: all
+  become: yes
+
+  roles:
+    - kubernetes
+
+- name: Installation Dashboard
+  hosts: master
+
+  roles:
+    - dashboard
+
+- name: Nginx tasks
+  hosts: master
+
+  roles:
+    - nginx

@@ -1,0 +1,25 @@
+- name: Create directory for Config
+  file:
+    path: config
+    state: directory
+
+- name: Copy config file
+  copy:
+    src: configMap/nginx.conf
+    dest: config/nginx.conf
+
+- name: Create ConfigMap
+  shell: kubectl -n nginx-test create configmap nginx-config --from-file=config/
+
+- name: Create directory configMap
+  file:
+    path: configMap
+    state: directory
+
+- name: Copy yaml file
+  copy:
+    src: configMap/nginx-confMap.yaml
+    dest: configMap/nginx-confMap.yaml
+
+- name: Create deploy and service
+  shell: kubectl -n nginx-test apply -f configMap/nginx-confMap.yaml

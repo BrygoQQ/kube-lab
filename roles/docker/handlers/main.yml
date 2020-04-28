@@ -1,0 +1,15 @@
+---
+# handlers file for docker
+
+- name: restart daemon
+  systemd: 
+    daemon_reload: yes
+  listen: "restart docker"
+  
+- name: start docker
+  service: 
+    name: docker 
+    state: restarted
+    enabled: yes
+  become: yes
+  listen: "restart docker"

@@ -1,0 +1,7 @@
+{
+    "exec-opts": [
+      "native.cgroupdriver=systemd"
+  ],
+    "storage-driver": "devicemapper",
+    "log-driver": "journald"
+  }

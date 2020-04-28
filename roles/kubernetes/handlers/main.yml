@@ -1,0 +1,13 @@
+---
+# handlers file for kubernetes
+
+- name: restart daemon
+  systemd: 
+    daemon_reload: yes
+  listen: "restart daemon and kubelet"
+
+- name: restart kubelet
+  service: 
+    name: kubelet
+    state: restarted
+  listen: "restart daemon and kubelet"

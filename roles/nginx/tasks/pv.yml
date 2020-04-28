@@ -1,0 +1,12 @@
+- name: Create directory pv
+  file:
+    path: pv
+    state: directory
+
+- name: Copy persistent volume file
+  copy:
+    src: pv/nginx-pv.yaml
+    dest: pv/nginx-pv.yaml
+
+- name: Create pv
+  shell: kubectl apply -f pv/nginx-pv.yaml

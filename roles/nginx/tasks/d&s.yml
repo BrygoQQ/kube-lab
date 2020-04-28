@@ -1,0 +1,12 @@
+- name: Create directory d&s
+  file:
+    path: ds
+    state: directory
+
+- name: Copy deploy file
+  copy:
+    src: d&s/nginx-deploy.yaml
+    dest: ds/nginx-deploy.yaml
+
+- name: Create namespace and deploy nginx
+  shell: kubectl apply -f ds/nginx-deploy.yaml

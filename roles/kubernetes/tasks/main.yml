@@ -1,0 +1,82 @@
+---
+# tasks file for kubernetes
+
+- name: Ensure Kubernetes repository exists.
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes YUM repository
+    enabled: true
+    gpgcheck: true
+    repo_gpgcheck: true
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: disable SELinux
+  command: setenforce 0
+  changed_when: false
+  register: result
+  failed_when: "'setenforce: SELinux is disabled' not in result.stderr and '' not in result.stdout"
+
+- name: disable SELinux on reboot
+  selinux:
+    state: disabled
+
+- name: ensure net.bridge.bridge-nf-call-ip6tables is set to 1
+  sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: 1
+    state: present
+
+- name: ensure net.bridge.bridge-nf-call-iptables is set to 1
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    state: present
+
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+  shell: |
+    swapoff -a
+  changed_when: true
+  when: ansible_swaptotal_mb > 0
+
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  lineinfile:
+    path: '/etc/fstab'
+    regexp: ' swap '
+    state: 'absent'
+
+- name: Install Kubernetes packages.
+  package:
+    name: "{{ item.name | default(item) }}"
+    state: "{{ item.state | default('present') }}"
+  notify: restart kubelet
+  with_items: "{{ kubernetes_packages }}"
+
+- name: Enable kubelt
+  service: 
+    name: kubelet 
+    state: started
+    enabled: yes
+
+# Set up master.
+- include: master.yml
+  when: inventory_hostname in groups['master']
+  become: yes
+  become_user: vagrant
+
+# Set up node.
+- include: node.yml
+  when: inventory_hostname in groups['nodes']
+  become: yes
+
+- name: detect docker's cgroup-driver
+  shell: docker info 2>/dev/null |grep -i cgroup | cut -d":" -f2 | tr -d " "
+  register: docker_cgroup_driver
+
+- name: Change cgroup
+  replace:
+    path: /var/lib/kubelet/kubeadm-flags.env
+    regexp: '--cgroup-driver=(systemd|cgroupfs)'
+    replace: '--cgroup-driver={{docker_cgroup_driver.stdout}}'
+    backup: no
+  notify: "restart daemon and kubelet"

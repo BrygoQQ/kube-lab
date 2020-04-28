@@ -1,0 +1,12 @@
+- name: Create directory pvc
+  file:
+    path: pvc
+    state: directory
+
+- name: Copy persistent volume claim file
+  copy:
+    src: pvc/nginx-pvc.yaml
+    dest: pvc/nginx-pvc.yaml
+
+- name: Create pvc
+  shell: kubectl apply -f pvc/nginx-pvc.yaml

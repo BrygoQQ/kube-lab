@@ -1,0 +1,3 @@
+- name: join cluster
+  become_user: root
+  shell: "{{ hostvars['master'].join_command }} --ignore-preflight-errors all"

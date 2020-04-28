@@ -1,0 +1,20 @@
+- name: Create directory pod
+  file:
+    path: pod
+    state: directory
+
+- name: Copy pod file
+  copy:
+    src: pod/nginx-pod.yaml
+    dest: pod/nginx-pod.yaml
+  
+- name: Create pod
+  shell: kubectl apply -f pod/nginx-pod.yaml
+  
+- name: Copy deploy file for pod
+  copy:
+    src: pod/nginx-deploy-pv.yaml
+    dest: pod/nginx-deploy-pv.yaml
+
+- name: Deploy with pv
+  shell: kubectl apply -f pod/nginx-deploy-pv.yaml

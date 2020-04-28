@@ -1,0 +1,6 @@
+---
+# defaults file for apps
+
+user_name: vagrant
+node_port: 31031
+type_port: NodePort
